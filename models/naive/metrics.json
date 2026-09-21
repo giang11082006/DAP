@@ -1,0 +1,11 @@
+{
+  "mae": 1048.6772486772486,
+  "rmse": 1509.0906193315552,
+  "r2": 0.8810527260510377,
+  "model": "naive",
+  "train_rows": 755,
+  "test_rows": 189,
+  "test_start": "2026-03-08",
+  "test_end": "2026-09-12",
+  "target": "next_day_price (next calendar day coffee price)"
+}
