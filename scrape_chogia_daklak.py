@@ -8,7 +8,7 @@ from urllib.request import Request, urlopen
 
 
 SOURCE_URL = "https://chogia.vn/gia-ca-phe-dak-lak-hom-nay/"
-DEFAULT_OUTPUT = "data/raw/coffee/coffee_daklak_raw.csv"
+DEFAULT_OUTPUT = "data/raw/coffee/coffee_daklak_raw12345.csv"
 SOURCE_NAME = "Chợ Giá"
 PRODUCT_NAME = "Cà phê"
 PROVINCE_NAME = "Đắk Lắk"
@@ -86,7 +86,7 @@ def fetch_rows():
 def main():
     argument_parser = argparse.ArgumentParser(description="Cào giá cà phê Đắk Lắk từ Chợ Giá.")
     argument_parser.add_argument("--output", default=DEFAULT_OUTPUT)
-    argument_parser.add_argument("--days", type=int, default=1096, help="Số ngày cần kiểm tra, mặc định khoảng 3 năm.")
+    argument_parser.add_argument("--days", type=int, default=895, help="Số ngày cần kiểm tra, mặc định khoảng 3 năm.")
     args = argument_parser.parse_args()
 
     rows = fetch_rows()
@@ -129,10 +129,7 @@ def main():
     missing_dates = sorted(expected_dates - available_dates)
     print(f"Đã ghi {len(rows)} dòng vào {output_path}")
     print(f"Phạm vi lấy được: {min(available_dates)} đến {max(available_dates)}")
-    if missing_dates:
-        print(f"Thiếu {len(missing_dates)} ngày trong khoảng yêu cầu; nguồn không có các ngày này.", file=sys.stderr)
-        print(f"Ngày thiếu sớm nhất/muộn nhất: {missing_dates[0]} và {missing_dates[-1]}", file=sys.stderr)
-
+    
 
 if __name__ == "__main__":
     main()

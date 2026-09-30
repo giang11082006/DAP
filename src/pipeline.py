@@ -15,7 +15,7 @@ import pandas as pd
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 # Dùng dataset coffee đã được bổ sung đủ từng ngày trong khoảng nghiên cứu.
 COFFEE_RAW = PROJECT_ROOT / "data" / "raw" / "coffee" / "coffee_daklak_3y_complete.csv"
-WEATHER_RAW = PROJECT_ROOT / "data" / "weather.csv"
+WEATHER_RAW = PROJECT_ROOT / "data" /"raw"/ "weather" /"weather.csv"
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 FEATURES_DIR = PROJECT_ROOT / "data" / "features"
 
@@ -43,6 +43,14 @@ def clean_coffee():
     coffee = coffee.drop_duplicates(subset="date", keep="last").sort_values("date")
     return coffee[["date", "province", "product", "price", "unit", "source", "source_url"]]
 
+def clean_coffee_remake():
+    """Làm sạch giá, giữ một dòng cho mỗi ngày nguồn đã công bố."""
+    coffee = pd.read_csv(COFFEE_RAW)
+    coffee["date"] = pd.to_datetime(coffee["date"], errors="coerce")
+    coffee["price"] = pd.to_numeric(coffee["price"], errors="coerce")
+    coffee = coffee.dropna(subset=["date", "price"]).copy()
+    coffee = coffee.drop_duplicates(subset="date", keep="last").sort_values("date")
+    return coffee[["date", "price"]]
 
 def clean_weather():
     """Đọc daily weather.csv, bỏ metadata và chuẩn hóa tên cột/kiểu dữ liệu."""
@@ -87,8 +95,8 @@ def build_features(merged):
     features["day_of_month"] = features["date"].dt.day
     features["month"] = features["date"].dt.month
     features["quarter"] = features["date"].dt.quarter
-    features["sin_month"] = (2 * 3.141592653589793 * features["month"] / 12).map(__import__("math").sin)
-    features["cos_month"] = (2 * 3.141592653589793 * features["month"] / 12).map(__import__("math").cos)
+    #features["sin_month"] = (2 * 3.141592653589793 * features["month"] / 12).map(__import__("math").sin)
+    #features["cos_month"] = (2 * 3.141592653589793 * features["month"] / 12).map(__import__("math").cos)
 
     # Dataset coffee đầy đủ theo ngày nên target là giá của ngày kế tiếp.
     # date_gap_days vẫn được lưu để kiểm tra dữ liệu có bị đứt quãng hay không.
@@ -101,7 +109,7 @@ def main():
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     FEATURES_DIR.mkdir(parents=True, exist_ok=True)
 
-    coffee = clean_coffee()
+    coffee = clean_coffee_remake()
     weather = clean_weather()
     merged = coffee.merge(weather, on="date", how="inner").rename(columns={"price": "coffee_price"}).sort_values("date")
     features = build_features(merged)

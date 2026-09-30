@@ -7,7 +7,7 @@ Project Machine Learning dự đoán giá cà phê tại tỉnh Đắk Lắk the
 - Làm sạch và kiểm tra dữ liệu giá cà phê.
 - Kết hợp giá cà phê với thời tiết theo từng ngày.
 - Tạo lag features, rolling features và calendar features.
-- So sánh Naive baseline, Linear Regression, Random Forest và XGBoost.
+- So sánh Linear Regression, Random Forest và XGBoost.
 - Đánh giá model bằng MAE, RMSE và R².
 - Tuân thủ chronological split, không shuffle dữ liệu time series và không dùng dữ liệu tương lai.
 
@@ -23,8 +23,7 @@ Project hiện chỉ dùng file CSV và model artifacts. Không có frontend, ba
 - Đơn vị: VND/kg
 
 ### Weather
-
-- File: `data/weather.csv`
+- File: `data/raw/weather/weather.csv`
 - Nguồn: [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api)
 - Tần suất: daily
 - Khu vực: tọa độ khoảng `12.688928, 108.01631`
@@ -38,7 +37,7 @@ Raw data được giữ nguyên. Các bước làm sạch và biến đổi tạ
 data/raw/coffee/coffee_daklak_3y_complete.csv
                          |
                          v
-                 src/pipeline.py <---- data/weather.csv
+                 src/pipeline.py <---- data/raw/weather/weather.csv
                          |
        +-----------------+------------------+
        |                 |                  |
@@ -51,9 +50,9 @@ coffee_clean.csv  weather_clean.csv  merged_daily.csv
                          +-----------------+------------------+
                          |                 |                  |
                          v                 v                  v
-                    Naive baseline   Linear Regression   Tree models
-                         |                 |             Random Forest
-                         |                 |               XGBoost
+                           Linear Regression   Tree models
+                                        |             Random Forest
+                                        |               XGBoost
                          +-----------------+------------------+
                                              |
                                              v
@@ -66,13 +65,13 @@ coffee_clean.csv  weather_clean.csv  merged_daily.csv
 .
 ├── data/
 │   ├── raw/coffee/                  # Dữ liệu giá gốc
+│   ├── raw/weather/                 # Dữ liệu thời tiết gốc
 │   ├── processed/                   # Dữ liệu sau cleaning và merge
 │   ├── features/                    # Dataset dùng để train
-│   └── weather.csv                  # Daily weather input
+│   └── raw/weather/weather.csv      # Daily weather input
 ├── models/                          # Metrics và model artifacts
 ├── src/
 │   ├── pipeline.py                  # Cleaning, merge, feature engineering
-│   ├── baseline.py                  # Naive forecast
 │   └── train_models.py              # Huấn luyện và so sánh model
 ├── requirements.txt
 └── README.md
@@ -115,13 +114,17 @@ Kết quả:
 
 Pipeline merge bằng cột `date`. Feature rolling dùng `.shift(1)` trước khi tính trung bình để không lấy thông tin tương lai. Target `next_day_price` là giá của ngày kế tiếp.
 
-### 2. Chạy Naive baseline
+### 2. Chạy EDA notebook
+
+Mở `notebooks/02_eda.ipynb` trong VS Code, chọn kernel `.venv`, rồi chạy toàn bộ notebook. Notebook tạo bảng và biểu đồ inline cho trend, phân phối, outlier, seasonality, volatility, missingness, correlation và weather-price. Phần cuối giải thích lý do chọn/không chọn feature và leakage.
+
+Có thể tạo báo cáo EDA dạng Markdown và file hình bằng script:
 
 ```powershell
-python .\src\baseline.py
+python .\src\eda.py
 ```
 
-Kết quả được lưu tại `models/naive/metrics.json`.
+Kết quả nằm trong `reports/eda_summary.md` và `reports/figures/`.
 
 ### 3. Huấn luyện và so sánh các model
 
@@ -170,12 +173,11 @@ Kết quả trên test set chronological 20% cuối của dataset:
 
 | Model | MAE | RMSE | R² |
 |---|---:|---:|---:|
-| Naive | 1048.68 | 1509.09 | 0.8811 |
-| Linear Regression | 1180.18 | 1597.87 | 0.8666 |
-| Random Forest | 2785.42 | 3564.69 | 0.3363 |
-| XGBoost | 5953.70 | 10556.84 | -4.8209 |
+| XGBoost | 677.91 | 1034.49 | 0.9437 |
+| Linear Regression | 734.35 | 1092.30 | 0.9372 |
+| Random Forest | 1383.55 | 1883.44 | 0.8134 |
 
-Đơn vị MAE và RMSE là VND/kg. Với dữ liệu hiện tại, Naive baseline là model tốt nhất. Vì vậy chưa nên kết luận XGBoost tốt hơn chỉ vì đây là model phức tạp hơn.
+Đơn vị MAE và RMSE là VND/kg. XGBoost dự đoán mức thay đổi giá giữa ngày hiện tại và ngày kế tiếp, sau đó cộng vào giá hiện tại. Tham số được chọn trên validation theo thứ tự thời gian; test chỉ dùng để đánh giá cuối.
 
 ## Quy tắc chống leakage
 
@@ -191,7 +193,7 @@ Kết quả trên test set chronological 20% cuối của dataset:
 - Dữ liệu giá và thời tiết mới được merge trong phần giao nhau của hai khoảng ngày.
 - Một số ngày cuối của coffee dataset chưa có weather tương ứng nên chưa được đưa vào merged dataset.
 - Model hiện mới dự đoán one-step-ahead. Forecast 3 ngày và 7 ngày chưa được triển khai.
-- EDA notebook, SHAP explanation và walk-forward validation là các phần có thể bổ sung tiếp theo.
+- SHAP explanation và walk-forward validation là các phần có thể bổ sung tiếp theo.
 
 ## Nguồn tham khảo
 

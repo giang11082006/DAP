@@ -30,8 +30,5 @@
   "day_of_week",
   "day_of_month",
   "month",
-  "quarter",
-  "sin_month",
-  "cos_month",
-  "date_gap_days"
+  "quarter"
 ]
