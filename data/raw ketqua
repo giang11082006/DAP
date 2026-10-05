@@ -7,19 +7,19 @@ import seaborn as sns
 # 1. Load data
 df_raw = pd.read_csv("   ") #Điền Path vào đây
 
-# 2. Dataset dimensions
+# 2. Dataset dimensions kichthuoc
 print(f"Raw dataset shape: {df_raw.shape[0]} rows, {df_raw.shape[1]} columns")
 
-# 1. Count duplicate rows
+# 1. Count duplicate rows dem hang trung lap
 num_duplicates = df_raw.duplicated().sum()
 print(f"Number of duplicate rows detected: {num_duplicates}")
 
-# Also check duplicates ignoring the identifier column
+# Also check duplicates ignoring the identifier column ktra muc trung lap, bo qua cot dinh danh
 num_dup_no_id = df_raw.drop(columns='date').duplicated().sum()
 print(f"Duplicate rows ignoring date: {num_dup_no_id}")
 print(f"Is date unique? {df_raw['date'].is_unique}")
 
-# 2. Drop duplicates (if any) and save to df_clean
+# 2. Drop duplicates (if any) and save to df_clean xoa neu co
 df_clean = df_raw.drop_duplicates().copy()
 print(f"Dataset shape after removing duplicates: {df_clean.shape}")
 
